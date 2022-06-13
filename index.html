@@ -1,0 +1,93 @@
+<!--
+ Copyright 2022 jose.garcia
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+     http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>transferControlOffScreen</title>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.1.0/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.1.0/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.12.4/babel.js"></script>
+  <script src="https://unpkg.com/prop-types@15.7.2/prop-types.js"></script>
+  <script type="text/babel">
+    const Canvas = (props) => {
+      const canvasref = React.useRef(null);
+      const [currentCanvas, setCanvas] = React.useState(null);
+
+      console.log(currentCanvas);
+
+      if(currentCanvas) {
+        // You can transfer a canvas with a existing context
+        const offscreen = currentCanvas.transferControlToOffscreen();
+        const canvasWorker = new Worker('./canvas.worker.js');
+        canvasWorker.postMessage({ canvas: offscreen }, [offscreen]);
+      }
+
+      React.useEffect(() => {
+        setCanvas(canvasref.current);
+      },[]);
+
+      return (
+        <canvas
+          ref={canvasref}
+          width={props.width}
+          height={props.height}
+          style={{
+            width: props.width,
+            height: props.height,
+            border: "1px solid black"
+          }}
+        />
+      );
+    };
+
+    function Tittle({subject, greeting}) {
+
+      return (
+        <h1>
+          <span>{greeting}, {subject}</span>
+        </h1>
+      )
+    }
+    Tittle.propTypes = {
+      subject: PropTypes.string.isRequired,
+      greeting: PropTypes.string.isRequired,
+    }
+
+    const App = () => {
+      return (
+        <>
+          <Tittle subject="World" greeting="Hello" />
+          <Canvas width="300" height="300"/>
+        </>
+      )
+    }
+
+    const app = (<App />);
+
+    ReactDOM.createRoot(document.getElementById('root')).render(app)
+  </script>
+</body>
+
+</html>
